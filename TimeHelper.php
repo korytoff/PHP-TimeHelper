@@ -3,6 +3,9 @@
 class TimeHelper {
 
     private $_dateTime;
+    protected $todayStr = 'Сегодня';
+    protected $yesterdayStr = 'Вчера';
+    protected $tomorrowStr = 'Завтра';
     protected $month = array(
         "Январь",
         "Февраль",
@@ -113,7 +116,7 @@ class TimeHelper {
         return $result;
     }
 
-    public function month($plural = true) {
+    public function month($plural = false) {
         $result = '';
         $M = $this->_dateTime->format('n') * 1 - 1;
         if ($plural) {
@@ -130,15 +133,17 @@ class TimeHelper {
         $today->setTime(0, 0, 0);
         $date = clone $this->_dateTime;
         $date->setTime(0, 0, 0);
-        $result = $this->longDate($year);
         if ($today->diff($date)->format('%a') === '0') {
-            $result = 'Сегодня';
+            $result = $this->todayStr;
         }
         elseif ($today->diff($date)->format('%R%a') === '+1') {
-            $result = 'Завтра';
+            $result = $this->tomorrowStr;
         }
         elseif ($today->diff($date)->format('%R%a') === '-1') {
-            $result = 'Вчера';
+            $result = $this->yesterdayStr;
+        }
+        else {
+            $result = $this->longDate($year);
         }
         return $result;
     }
@@ -150,7 +155,7 @@ class TimeHelper {
     public function longDate($year = false, $time = false) {
         $result = '';
         $result .= $this->day();
-        $result .= ' ' . $this->month();
+        $result .= ' ' . $this->month(true);
         if ($year) {
             $result .= ' ' . $this->_dateTime->format('Y');
         }
