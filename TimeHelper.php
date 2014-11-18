@@ -3,6 +3,9 @@
 class TimeHelper {
 
     private $_dateTime;
+    protected $todayStr = 'Сегодня';
+    protected $yesterdayStr = 'Вчера';
+    protected $tomorrowStr = 'Завтра';
     protected $month = array(
         "Январь",
         "Февраль",
@@ -94,9 +97,17 @@ class TimeHelper {
         return $this;
     }
 
-    public function datetime($time = true) {
+    public function datetime($time = true, $dateFormat = self::DATE) {
         $result = '';
-        $result .= $this->_dateTime->format('Y-m-d');
+        switch ($dateFormat) {
+            case self::DATETIME:
+            case self::EUR_DATETIME:
+                $time = false;
+                break;
+            default:
+                break;
+        }
+        $result .= $this->_dateTime->format($dateFormat);
         if ($time) {
             $result .= ' ' . $this->_dateTime->format('H:i:s');
         }
@@ -134,13 +145,13 @@ class TimeHelper {
         $date->setTime(0, 0, 0);
         $result = $this->longDate($year);
         if ($today->diff($date)->format('%a') === '0') {
-            $result = 'Сегодня';
+            $result = $this->todayStr;
         }
         elseif ($today->diff($date)->format('%R%a') === '+1') {
-            $result = 'Завтра';
+            $result = $this->tomorrowStr;
         }
         elseif ($today->diff($date)->format('%R%a') === '-1') {
-            $result = 'Вчера';
+            $result = $this->yesterdayStr;
         }
         if ($time) {
             $result .= ' ' . $this->shortTime(false);
