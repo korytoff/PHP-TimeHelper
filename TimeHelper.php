@@ -71,6 +71,7 @@ class TimeHelper {
     const DATE = 'Y-m-d';
     const EUR_DATETIME = 'd.m.Y H:i:s';
     const EUR_DATE = 'd.m.Y';
+    const STRDATE = 'd month year time';
 
     static function create($date = null, $format = self::DATETIME) {
         $className = __CLASS__;
@@ -81,15 +82,47 @@ class TimeHelper {
         return $this->datetime();
     }
 
-    function __construct($date, $format) {
+    function __construct($date = null, $format = self::DATETIME) {
         mb_internal_encoding('UTF-8');
-        if (is_string($date)) {
+        if ($format === self::STRDATE) {
+            $this->_dateTime = $this->parse($date);
+        }
+        elseif (is_string($date)) {
             $this->_dateTime = DateTime::createFromFormat($format, $date);
         }
         else {
             $this->_dateTime = new DateTime;
         }
-        return;
+        return $this;
+    }
+
+    /*
+     * Разбор даты из строки вида '2  Мая 2014 в 12:05'
+     */
+
+    public function parse($str) {
+        $str = mb_strtolower(trim($str));
+        preg_match('/^(\d+) +([ъхзщшгнекуцйфывапролджэёюбьтимсчя]+) +(\d{4})[A-zА-я ]+(\d{2}:?\d?\d?)?/', $str, $matches);
+        $result['day'] = (isset($matches[1]) && is_numeric($matches[1])) ? str_pad($matches[1], 2, '0', STR_PAD_LEFT) : date('d');
+        if (isset($matches[2])) {
+            $month = array_map('mb_strtolower', $this->month);
+            $monthPlural = array_map('mb_strtolower', $this->monthPlural);
+            $shortMonth = array_map('mb_strtolower', $this->shortMonth);
+            if (array_keys($month, $matches[2])) {
+                $monthNum = array_keys($month, $matches[2]);
+            }
+            elseif (array_keys($monthPlural, $matches[2])) {
+                $monthNum = array_keys($monthPlural, $matches[2]);
+            }
+            elseif (array_keys($shortMonth, $matches[2])) {
+                $monthNum = array_keys($shortMonth, $matches[2]);
+            }
+        }
+        $result['month'] = isset($monthNum[0]) ? str_pad($monthNum[0] * 1 + 1, 2, '0', STR_PAD_LEFT) : date('m');
+        $result['year'] = (isset($matches[3]) && strlen($matches[3]) === 4) ? $matches[3] : date('Y');
+        $result['time'] = isset($matches[4]) ? str_pad($matches[4], 8, ':00') : "00:00:00";
+        $dateStr = $result['year'] . '-' . $result['month'] . '-' . $result['day'] . ' ' . $result['time'];
+        return $result ? DateTime::createFromFormat(self::DATETIME, $dateStr) : new DateTime;
     }
 
     public function plusDay($day = 1) {
@@ -207,6 +240,20 @@ class TimeHelper {
             }
         }
         $result .= $this->_dateTime->format('H:i');
+        return $result;
+    }
+
+    /*
+     * Выводит год
+     * @param $start – год начала интервала, если нужен интервал вида "2014 – 2015"
+     */
+
+    public function year($start = false) {
+        $result = '';
+        if ($start && is_numeric($start) && $start * 1 !== $this->_dateTime->format('Y') * 1) {
+            $result = $start . ' – ';
+        }
+        $result .= $this->_dateTime->format('Y');
         return $result;
     }
 

@@ -1,1 +1,6 @@
-/nbproject/private/
+# Файлы настроек редакторов и IDE
+.project
+.settings
+.vimrc
+.idea
+/nbproject/*
