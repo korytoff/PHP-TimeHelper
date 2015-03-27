@@ -1,5 +1,7 @@
 <?php
 
+namespace korytoff\helpers;
+
 class TimeHelper {
 
     private $_dateTime;
