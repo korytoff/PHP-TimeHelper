@@ -82,6 +82,10 @@ class TimeHelper {
         return $this->datetime();
     }
 
+    public function __clone() {
+        $this->_dateTime = clone $this->_dateTime;
+    }
+
     function __construct($date = null, $format = self::DATETIME) {
         mb_internal_encoding('UTF-8');
         if ($format === self::STRDATE) {
@@ -89,6 +93,9 @@ class TimeHelper {
         }
         elseif (is_string($date)) {
             $this->_dateTime = DateTime::createFromFormat($format, $date);
+        }
+        elseif (is_a($date, 'DateTime')) {
+            $this->_dateTime = $date;
         }
         else {
             $this->_dateTime = new DateTime;
@@ -130,6 +137,12 @@ class TimeHelper {
         return $this;
     }
 
+    public function modify($day, $param = 'day') {
+        $day *= 1; // int
+        $this->_dateTime->modify("$day $param");
+        return $this;
+    }
+
     public function datetime($time = true, $dateFormat = self::DATE) {
         $result = '';
         switch ($dateFormat) {
@@ -151,6 +164,18 @@ class TimeHelper {
         $result = '';
         $result .= $this->_dateTime->format('j') * 1;
         return $result;
+    }
+
+    public function dayOfWeek() {
+        return $this->_dateTime->format('N') * 1;
+    }
+
+    public function dayStr($short = false) {
+        $N = $this->_dateTime->format('N') * 1 - 1;
+        $days = ($short) ? $this->shortDay : $this->day;
+        if (isset($days[$N])) {
+            return $days[$N];
+        }
     }
 
     public function month($plural = true) {
@@ -254,6 +279,33 @@ class TimeHelper {
             $result = $start . ' – ';
         }
         $result .= $this->_dateTime->format('Y');
+        return $result;
+    }
+
+    public function getWeek() {
+        $result = [];
+        if ($this->_dateTime) {
+            $this->_dateTime->setTime(0, 0, 0);
+            $result['currentDate'] = $this->datetime(false);
+            $result['currentDay'] = $day = (int) $this->_dateTime->format('N');
+            for ($i = 1; $i <= 7; $i++) {
+                $date = clone $this;
+                $diff = $i - $day;
+                $result['list'][$i] = $date->modify($diff . " day");
+            }
+            $dateClone = clone $this;
+            $result['prev'] = (string) $dateClone->modify(-6 - $this->_dateTime->format('N'))->longDate();
+            $result['prevDate'] = $dateClone->datetime(false);
+            $result['prev'] .= ' – ' . (string) $dateClone->modify(6)->longDate();
+            $result['current'] = (string) $dateClone->modify(1)->longDate();
+            $result['current'] .= ' – ' . (string) $dateClone->modify(6)->longDate();
+            $result['next'] = (string) $dateClone->modify(1)->longDate();
+            $result['nextDate'] = $dateClone->datetime(false);
+            $result['next'] .= ' – ' . (string) $dateClone->modify(6)->longDate();
+        }
+        else {
+            $result = false;
+        }
         return $result;
     }
 
