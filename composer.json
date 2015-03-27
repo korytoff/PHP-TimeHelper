@@ -1,0 +1,22 @@
+{
+    "name": "korytoff/helpers/timehelper",
+    "description": "Php class helper for formatting datetime",
+    "authors": [
+        {
+            "name": "korytoff",
+            "email": "korytoff@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "korytoff/helpers/timehelper": "/TimeHelper.php"
+        }
+    },
+    "support": {
+        "source": "https://github.com/korytoff/PHP-TimeHelper"
+    }
+}
