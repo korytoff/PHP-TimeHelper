@@ -37,6 +37,6 @@ Use
 -----------
 ```php
 <?php
-  echo TimeHelper::create('2014-11-07 22:12:00')->today();
+  echo TimeHelper::create('2014-11-07 22:12:00')->today(); // Сегодня, Завтра, Вчера или 14 сентября 2015 г.
 ?>
 ```

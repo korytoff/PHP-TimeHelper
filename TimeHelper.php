@@ -2,12 +2,33 @@
 
 namespace korytoff\helpers;
 
-class TimeHelper {
+/**
+ * Class TimeHelper
+ * @author korytoff@gmail.com
+ * @package korytoff\helpers
+ */
+class TimeHelper
+{
 
+    /**
+     * @var \DateTime
+     */
     private $_dateTime;
+    /**
+     * @var string
+     */
     protected $todayStr = 'Сегодня';
+    /**
+     * @var string
+     */
     protected $yesterdayStr = 'Вчера';
+    /**
+     * @var string
+     */
     protected $tomorrowStr = 'Завтра';
+    /**
+     * @var array
+     */
     protected $month = array(
         "Январь",
         "Февраль",
@@ -22,6 +43,9 @@ class TimeHelper {
         "Ноябрь",
         "Декабрь"
     );
+    /**
+     * @var array
+     */
     protected $monthPlural = array(
         "Января",
         "Февраля",
@@ -36,6 +60,9 @@ class TimeHelper {
         "Ноября",
         "Декабря"
     );
+    /**
+     * @var array
+     */
     protected $shortMonth = array(
         "Янв",
         "Фев",
@@ -50,6 +77,9 @@ class TimeHelper {
         "Ноя",
         "Дек"
     );
+    /**
+     * @var array
+     */
     protected $day = array(
         'Понедельник',
         'Вторник',
@@ -59,6 +89,9 @@ class TimeHelper {
         'Суббота',
         'Воскресение',
     );
+    /**
+     * @var array
+     */
     protected $shortDay = array(
         'Пн',
         'Вт',
@@ -75,41 +108,66 @@ class TimeHelper {
     const EUR_DATE = 'd.m.Y';
     const STRDATE = 'd month year time';
 
-    static function create($date = null, $format = self::DATETIME) {
+    /**
+     * Создание TimeHelper с указанием даты и формата
+     *
+     * @param null $date
+     * @param string $format
+     * @return mixed
+     */
+    static function create($date = null, $format = self::DATETIME)
+    {
         $className = __CLASS__;
+
         return new $className($date, $format);
     }
 
-    public function __toString() {
+    /**
+     * Магическая функция toString
+     *
+     * @return string
+     */
+    public function __toString()
+    {
         return $this->datetime();
     }
 
-    public function __clone() {
+    /**
+     * Клонирование
+     */
+    public function __clone()
+    {
         $this->_dateTime = clone $this->_dateTime;
     }
 
-    function __construct($date = null, $format = self::DATETIME) {
+    /**
+     * @param null $date
+     * @param string $format
+     */
+    function __construct($date = null, $format = self::DATETIME)
+    {
         mb_internal_encoding('UTF-8');
         if ($format === self::STRDATE) {
             $this->_dateTime = $this->parse($date);
-        }
-        elseif (is_string($date)) {
-            $this->_dateTime = DateTime::createFromFormat($format, $date);
-        }
-        elseif (is_a($date, 'DateTime')) {
+        } elseif (is_string($date)) {
+            $this->_dateTime = \DateTime::createFromFormat($format, $date);
+        } elseif (is_a($date, 'DateTime')) {
             $this->_dateTime = $date;
+        } else {
+            $this->_dateTime = new \DateTime;
         }
-        else {
-            $this->_dateTime = new DateTime;
-        }
+
         return $this;
     }
 
-    /*
+    /**
      * Разбор даты из строки вида '2  Мая 2014 в 12:05'
+     *
+     * @param $str
+     * @return \DateTime
      */
-
-    public function parse($str) {
+    public function parse($str)
+    {
         $str = mb_strtolower(trim($str));
         preg_match('/^(\d+) +([ъхзщшгнекуцйфывапролджэёюбьтимсчя]+) +(\d{4})[A-zА-я ]+(\d{2}:?\d?\d?)?/', $str, $matches);
         $result['day'] = (isset($matches[1]) && is_numeric($matches[1])) ? str_pad($matches[1], 2, '0', STR_PAD_LEFT) : date('d');
@@ -119,11 +177,9 @@ class TimeHelper {
             $shortMonth = array_map('mb_strtolower', $this->shortMonth);
             if (array_keys($month, $matches[2])) {
                 $monthNum = array_keys($month, $matches[2]);
-            }
-            elseif (array_keys($monthPlural, $matches[2])) {
+            } elseif (array_keys($monthPlural, $matches[2])) {
                 $monthNum = array_keys($monthPlural, $matches[2]);
-            }
-            elseif (array_keys($shortMonth, $matches[2])) {
+            } elseif (array_keys($shortMonth, $matches[2])) {
                 $monthNum = array_keys($shortMonth, $matches[2]);
             }
         }
@@ -131,21 +187,47 @@ class TimeHelper {
         $result['year'] = (isset($matches[3]) && strlen($matches[3]) === 4) ? $matches[3] : date('Y');
         $result['time'] = isset($matches[4]) ? str_pad($matches[4], 8, ':00') : "00:00:00";
         $dateStr = $result['year'] . '-' . $result['month'] . '-' . $result['day'] . ' ' . $result['time'];
-        return $result ? DateTime::createFromFormat(self::DATETIME, $dateStr) : new DateTime;
+
+        return $result ? \DateTime::createFromFormat(self::DATETIME, $dateStr) : new \DateTime;
     }
 
-    public function plusDay($day = 1) {
+    /**
+     * Прибавление дней
+     *
+     * @param int $day
+     * @return $this
+     */
+    public function plusDay($day = 1)
+    {
         $this->_dateTime->modify("+$day day");
+
         return $this;
     }
 
-    public function modify($day, $param = 'day') {
-        $day *= 1; // int
+    /**
+     * Изменение даты
+     *
+     * @param $day
+     * @param string $param
+     * @return $this
+     */
+    public function modify($day, $param = 'day')
+    {
+        $day = (int) $day;
         $this->_dateTime->modify("$day $param");
+
         return $this;
     }
 
-    public function datetime($time = true, $dateFormat = self::DATE) {
+    /**
+     * Вывод даты и времени с указанием формата
+     *
+     * @param bool|true $time
+     * @param string $dateFormat
+     * @return string
+     */
+    public function datetime($time = true, $dateFormat = self::DATE)
+    {
         $result = '';
         switch ($dateFormat) {
             case self::DATETIME:
@@ -155,75 +237,124 @@ class TimeHelper {
             default:
                 break;
         }
-        $result .= $this->_dateTime->format($dateFormat);
-        if ($time) {
-            $result .= ' ' . $this->_dateTime->format('H:i:s');
+        if ($this->_dateTime) {
+            $result .= $this->_dateTime->format($dateFormat);
+            if ($time) {
+                $result .= ' ' . $this->_dateTime->format('H:i:s');
+            }
         }
+
         return $result;
     }
 
-    public function day() {
+    /**
+     * Получение номера дня
+     *
+     * @return string
+     */
+    public function day()
+    {
         $result = '';
-        $result .= $this->_dateTime->format('j') * 1;
+        $result .= (int) $this->_dateTime->format('j');
+
         return $result;
     }
 
-    public function dayOfWeek() {
-        return $this->_dateTime->format('N') * 1;
+    /**
+     * Получения номера дня недели
+     *
+     * @return int
+     */
+    public function dayOfWeek()
+    {
+        return (int) $this->_dateTime->format('N');
     }
 
-    public function dayStr($short = false) {
-        $N = $this->_dateTime->format('N') * 1 - 1;
+    /**
+     * Получение дня недели текстом
+     *
+     * @param bool|false $short
+     * @return string
+     */
+    public function dayStr($short = false)
+    {
+        $N = (int) $this->_dateTime->format('N') - 1;
         $days = ($short) ? $this->shortDay : $this->day;
-        if (isset($days[$N])) {
-            return $days[$N];
-        }
+        return isset($days[$N]) ? $days[$N] : "";
     }
 
-    public function month($plural = true) {
+    /**
+     * Получение недели
+     *
+     * @param bool|true $plural
+     * @return string
+     */
+    public function month($plural = true)
+    {
         $result = '';
-        $M = $this->_dateTime->format('n') * 1 - 1;
+        $M = (int) $this->_dateTime->format('n') - 1;
         if ($plural) {
             $result .= ' ' . mb_convert_case($this->monthPlural[$M], MB_CASE_TITLE);
-        }
-        else {
+        } else {
             $result .= ' ' . mb_convert_case($this->month[$M], MB_CASE_TITLE);
         }
+
         return $result;
     }
 
-    public function diff($format = '%i') {
-        $now = new DateTime();
+    /**
+     * Разница с текущей датой и временем
+     *
+     * @param string $format
+     * @return mixed
+     */
+    public function diff($format = '%i')
+    {
+        $now = new \DateTime();
         $date = clone $this->_dateTime;
+
         return $now->diff($date)->format($format);
     }
 
-    public function today($year = true, $time = false) {
-        $today = new DateTime;
+    /**
+     * Получение словестного отображения даты
+     * Например "Сегодня", "Вчера", "Завтра", "14 сентября 2015 г."
+     *
+     * @param bool|true $year
+     * @param bool|false $time
+     * @return string
+     */
+    public function today($year = true, $time = false)
+    {
+        $today = new \DateTime;
         $today->setTime(0, 0, 0);
         $date = clone $this->_dateTime;
         $date->setTime(0, 0, 0);
         $result = $this->longDate($year);
         if ($today->diff($date)->format('%a') === '0') {
             $result = $this->todayStr;
-        }
-        elseif ($today->diff($date)->format('%R%a') === '+1') {
+        } elseif ($today->diff($date)->format('%R%a') === '+1') {
             $result = $this->tomorrowStr;
-        }
-        elseif ($today->diff($date)->format('%R%a') === '-1') {
+        } elseif ($today->diff($date)->format('%R%a') === '-1') {
             $result = $this->yesterdayStr;
         }
         if ($time) {
             $result .= ' ' . $this->shortTime(false);
         }
+
         return $result;
     }
 
-    /*
+    /**
+     * Получения длинного отображения даты текстом
      * Число, месяц, опц. год, опц. время
+     *
+     * @param bool|false $year
+     * @param bool|false $time
+     * @return string
      */
-
-    public function longDate($year = false, $time = false) {
+    public function longDate($year = false, $time = false)
+    {
         $result = '';
         $result .= $this->day();
         $result .= ' ' . $this->month();
@@ -233,14 +364,19 @@ class TimeHelper {
         if ($time) {
             $result .= ' ' . $this->shortTime(false);
         }
+
         return $result;
     }
 
-    /*
+    /**
+     * Получения котортого отображения даты
      * Опц. день недели, число, 3 буквы месяца
+     *
+     * @param bool|false $day
+     * @return string
      */
-
-    public function shortDate($day = false) {
+    public function shortDate($day = false)
+    {
         $result = '';
         if ($day) {
             $N = $this->_dateTime->format('N') * 1 - 1;
@@ -251,14 +387,20 @@ class TimeHelper {
         $result .= $this->_dateTime->format('j') * 1;
         $M = $this->_dateTime->format('n') * 1 - 1;
         $result .= ' ' . mb_strtolower($this->shortMonth[$M]);
+
         return $result;
     }
 
-    /*
+    /**
+     * Получение короткой записи времени
      * Опц. день недели, время
+     * Например "Пн, 12:01"
+     *
+     * @param bool|true $day
+     * @return string
      */
-
-    public function shortTime($day = true) {
+    public function shortTime($day = true)
+    {
         $result = '';
         if ($day) {
             $N = $this->_dateTime->format('N') * 1 - 1;
@@ -267,24 +409,34 @@ class TimeHelper {
             }
         }
         $result .= $this->_dateTime->format('H:i');
+
         return $result;
     }
 
-    /*
-     * Выводит год
-     * @param $start – год начала интервала, если нужен интервал вида "2014 – 2015"
+    /**
+     * Получение года или интервала годов
+     *
+     * @param bool|false $start год начала интервала, если нужен интервал вида "2014 – 2015"
+     * @return string
      */
-
-    public function year($start = false) {
+    public function year($start = false)
+    {
         $result = '';
         if ($start && is_numeric($start) && $start * 1 !== $this->_dateTime->format('Y') * 1) {
             $result = $start . ' – ';
         }
         $result .= $this->_dateTime->format('Y');
+
         return $result;
     }
 
-    public function getWeek() {
+    /**
+     * Получения дней недели в массиве
+     *
+     * @return array
+     */
+    public function getWeek()
+    {
         $result = [];
         if ($this->_dateTime) {
             $this->_dateTime->setTime(0, 0, 0);
@@ -305,9 +457,7 @@ class TimeHelper {
             $result['nextDate'] = $dateClone->datetime(false);
             $result['next'] .= ' – ' . (string) $dateClone->modify(6)->longDate();
         }
-        else {
-            $result = false;
-        }
+
         return $result;
     }
 
