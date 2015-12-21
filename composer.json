@@ -1,6 +1,7 @@
 {
     "name": "korytoff/timehelper",
     "description": "Php class helper for formatting datetime",
+    "version": "1.0",
     "authors": [
         {
             "name": "korytoff",
