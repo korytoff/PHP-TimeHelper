@@ -1,3 +1,5 @@
+[![Code Climate](https://codeclimate.com/github/korytoff/PHP-TimeHelper/badges/gpa.svg)](https://codeclimate.com/github/korytoff/PHP-TimeHelper)
+
 Php TimeHelper class
 ==============
 
